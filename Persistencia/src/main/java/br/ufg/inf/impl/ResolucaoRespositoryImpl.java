@@ -1,21 +1,24 @@
 package br.ufg.inf.impl;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
-import javax.xml.namespace.QName;
 
 import br.ufg.inf.domain.Resolucoes;
 import br.ufg.inf.domain.Tipos;
 import br.ufg.inf.es.saep.sandbox.dominio.Resolucao;
 import br.ufg.inf.es.saep.sandbox.dominio.ResolucaoRepository;
 import br.ufg.inf.es.saep.sandbox.dominio.Tipo;
+import br.ufg.inf.util.XMLParserUtil;
 
 public class ResolucaoRespositoryImpl implements ResolucaoRepository {
 
@@ -60,18 +63,18 @@ public class ResolucaoRespositoryImpl implements ResolucaoRepository {
 		this.resolucaoFile.getParentFile().mkdirs();
 
 		try {
-			JAXBContext jc = JAXBContext.newInstance(Resolucoes.class);
-
-			final Resolucoes res = new Resolucoes();
-			res.getResolucoes().add(resolucao);
-
-			JAXBElement<Resolucoes> je2 = new JAXBElement<Resolucoes>(new QName("resolucao"), Resolucoes.class, res);
-			Marshaller marshaller = jc.createMarshaller();
-			
-			marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-			marshaller.setAdapter(new AnyTypeAdapter());
-			marshaller.marshal(je2, this.resolucaoFile);
-		} catch (JAXBException e) {
+			if (!this.resolucaoFile.exists()) {
+				this.resolucaoFile.createNewFile();
+			}
+			Files.write(Paths.get(this.resolucaoFile.getPath()), XMLParserUtil.objectToXmlString(resolucao).getBytes(),
+					StandardOpenOption.APPEND);
+		} catch (IOException e) {
+			// exception handling left as an exercise for the reader
+		} catch (IllegalArgumentException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return resolucao.getId();
@@ -79,36 +82,21 @@ public class ResolucaoRespositoryImpl implements ResolucaoRepository {
 
 	public void persisteTipo(Tipo tipo) {
 
-		JAXBContext jaxbContext;
+		this.tipoFile.getParentFile().mkdirs();
+
 		try {
-			jaxbContext = JAXBContext.newInstance(Tipos.class);
-			Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
-			jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-			Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
-
-			Tipos tiposSalvos;
-
-			if (this.tipoFile.exists()) {
-				tiposSalvos = (Tipos) jaxbUnmarshaller.unmarshal(this.tipoFile);
-				if (tiposSalvos.getTipos() != null) {
-					for (Tipo tipoSalvo : tiposSalvos.getTipos()) {
-						if (tipoSalvo.getId().equals(tipo.getId())) {
-							return;
-						}
-					}
-				} else {
-					tiposSalvos.setTipos(new ArrayList<Tipo>());
-				}
-			} else {
-				tiposSalvos = new Tipos();
-				tiposSalvos.setTipos(new ArrayList<Tipo>());
+			if (!this.tipoFile.exists()) {
+				this.tipoFile.createNewFile();
 			}
-
-			tiposSalvos.getTipos().add(tipo);
-
-			this.tipoFile.getParentFile().mkdirs();
-			jaxbMarshaller.marshal(tiposSalvos, this.tipoFile);
-		} catch (JAXBException e) {
+			Files.write(Paths.get(this.tipoFile.getPath()), XMLParserUtil.objectToXmlString(tipo).getBytes(),
+					StandardOpenOption.APPEND);
+		} catch (IOException e) {
+			// exception handling left as an exercise for the reader
+		} catch (IllegalArgumentException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 

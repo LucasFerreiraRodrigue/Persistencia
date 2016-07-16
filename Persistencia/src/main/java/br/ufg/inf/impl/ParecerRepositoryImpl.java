@@ -1,7 +1,10 @@
 package br.ufg.inf.impl;
 
 import java.io.File;
-import java.util.ArrayList;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -16,6 +19,7 @@ import br.ufg.inf.es.saep.sandbox.dominio.Parecer;
 import br.ufg.inf.es.saep.sandbox.dominio.ParecerRepository;
 import br.ufg.inf.es.saep.sandbox.dominio.Pontuacao;
 import br.ufg.inf.es.saep.sandbox.dominio.Radoc;
+import br.ufg.inf.util.XMLParserUtil;
 
 public class ParecerRepositoryImpl implements ParecerRepository {
 	private static String CAMINHO_BASE = "data";
@@ -98,36 +102,21 @@ public class ParecerRepositoryImpl implements ParecerRepository {
 	}
 
 	public void persisteParecer(Parecer parecer) {
-		JAXBContext jaxbContext;
+		this.parecerFile.getParentFile().mkdirs();
+
 		try {
-			jaxbContext = JAXBContext.newInstance(Pareceres.class);
-			Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
-			Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
-			jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-
-			Pareceres pareceresSalvos;
-
-			if (this.parecerFile.exists()) {
-				pareceresSalvos = (Pareceres) jaxbUnmarshaller.unmarshal(this.parecerFile);
-				if (pareceresSalvos.getPareceres() != null) {
-					for (Parecer parecerSalvo : pareceresSalvos.getPareceres()) {
-						if (parecerSalvo.getId().equals(parecer.getId())) {
-							return;
-						}
-					}
-				} else {
-					pareceresSalvos.setPareceres(new ArrayList<Parecer>());
-				}
-			} else {
-				pareceresSalvos = new Pareceres();
-				pareceresSalvos.setPareceres(new ArrayList<Parecer>());
+			if (!this.parecerFile.exists()) {
+				this.parecerFile.createNewFile();
 			}
-
-			pareceresSalvos.getPareceres().add(parecer);
-
-			this.parecerFile.getParentFile().mkdirs();
-			jaxbMarshaller.marshal(pareceresSalvos, this.parecerFile);
-		} catch (JAXBException e) {
+			Files.write(Paths.get(this.parecerFile.getPath()), XMLParserUtil.objectToXmlString(parecer).getBytes(),
+					StandardOpenOption.APPEND);
+		} catch (IOException e) {
+			// exception handling left as an exercise for the reader
+		} catch (IllegalArgumentException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -251,37 +240,21 @@ public class ParecerRepositoryImpl implements ParecerRepository {
 	}
 
 	public String persisteRadoc(Radoc radoc) {
-		JAXBContext jaxbContext;
+		this.radocFile.getParentFile().mkdirs();
+
 		try {
-			jaxbContext = JAXBContext.newInstance(Radocs.class);
-
-			Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
-			Radocs radocsSalvos;
-			if (this.radocFile.exists()) {
-				radocsSalvos = (Radocs) jaxbUnmarshaller.unmarshal(this.radocFile);
-				if (radocsSalvos.getRadocs() != null) {
-					for (Radoc radocSalvo : radocsSalvos.getRadocs()) {
-						if (radocSalvo.getId().equals(radoc.getId())) {
-							return null;
-						}
-					}
-				} else {
-					radocsSalvos.setRadocs(new ArrayList<Radoc>());
-				}
-			} else {
-				radocsSalvos = new Radocs();
-				radocsSalvos.setRadocs(new ArrayList<Radoc>());
+			if (!this.radocFile.exists()) {
+				this.radocFile.createNewFile();
 			}
-
-			radocsSalvos.getRadocs().add(radoc);
-
-			Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
-
-			jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-
-			this.radocFile.getParentFile().mkdirs();
-			jaxbMarshaller.marshal(radocsSalvos, this.radocFile);
-		} catch (JAXBException e) {
+			Files.write(Paths.get(this.radocFile.getPath()), XMLParserUtil.objectToXmlString(radoc).getBytes(),
+					StandardOpenOption.APPEND);
+		} catch (IOException e) {
+			// exception handling left as an exercise for the reader
+		} catch (IllegalArgumentException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
