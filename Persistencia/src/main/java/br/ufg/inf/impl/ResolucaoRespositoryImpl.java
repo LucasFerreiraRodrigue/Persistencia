@@ -67,7 +67,9 @@ public class ResolucaoRespositoryImpl implements ResolucaoRepository {
 
 			JAXBElement<Resolucoes> je2 = new JAXBElement<Resolucoes>(new QName("resolucao"), Resolucoes.class, res);
 			Marshaller marshaller = jc.createMarshaller();
+			
 			marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+			marshaller.setAdapter(new AnyTypeAdapter());
 			marshaller.marshal(je2, this.resolucaoFile);
 		} catch (JAXBException e) {
 			e.printStackTrace();
