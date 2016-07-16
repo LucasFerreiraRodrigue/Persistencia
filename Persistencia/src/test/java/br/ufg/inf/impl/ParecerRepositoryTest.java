@@ -1,8 +1,11 @@
 package br.ufg.inf.impl;
 
 import org.junit.Before;
+import org.junit.Test;
 
 import br.ufg.inf.es.saep.sandbox.dominio.ParecerRepository;
+import br.ufg.inf.fabrica.ParecerFabrica;
+import br.ufg.inf.fabrica.RadocFabrica;
 
 /**
  * Classe de testes para {@link ParecerRepositoryImpl}
@@ -12,9 +15,15 @@ public class ParecerRepositoryTest {
 
 	private ParecerRepository parecerRepository;
 
+	private ParecerFabrica parecerFabrica;
+
+	private RadocFabrica radocFabrica;
+
 	@Before
 	public void setUp() {
 		this.parecerRepository = new ParecerRepositoryImpl();
+		this.parecerFabrica = new ParecerFabrica();
+		this.radocFabrica = new RadocFabrica();
 	}
 
 	public void adicionaNota() {
@@ -27,8 +36,10 @@ public class ParecerRepositoryTest {
 
 	}
 
+	@Test
 	public void persisteParecer() {
-		// TODO Auto-generated method stub
+
+		this.parecerRepository.persisteParecer(this.parecerFabrica.novoParecer());
 
 	}
 
@@ -50,8 +61,9 @@ public class ParecerRepositoryTest {
 		// TODO Auto-generated method stub
 	}
 
+	@Test
 	public void persisteRadoc() {
-		// TODO Auto-generated method stub
+		this.parecerRepository.persisteRadoc(this.radocFabrica.novoRadoc());
 	}
 
 	public void removeRadoc() {

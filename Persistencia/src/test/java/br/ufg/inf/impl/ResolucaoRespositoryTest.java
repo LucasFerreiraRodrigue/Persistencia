@@ -5,6 +5,7 @@ import org.junit.Test;
 
 import br.ufg.inf.es.saep.sandbox.dominio.ResolucaoRepository;
 import br.ufg.inf.fabrica.ResolucaoFabrica;
+import br.ufg.inf.fabrica.TipoFabrica;
 
 /**
  * Classe de testes para {@link ResolucaoRespositoryImpl}
@@ -16,10 +17,13 @@ public class ResolucaoRespositoryTest {
 
 	private ResolucaoFabrica resolucaoFabrica;
 
+	private TipoFabrica tipoFabrica;
+
 	@Before
 	public void setUp() {
 		this.resolucaoRepository = new ResolucaoRespositoryImpl();
 		this.resolucaoFabrica = new ResolucaoFabrica();
+		this.tipoFabrica = new TipoFabrica();
 	}
 
 	@Test
@@ -41,8 +45,10 @@ public class ResolucaoRespositoryTest {
 		// TODO Auto-generated method stub
 	}
 
+	@Test
 	public void persisteTipo() {
-		// TODO Auto-generated method stub
+
+		this.resolucaoRepository.persisteTipo(this.tipoFabrica.novoTipo());
 
 	}
 
