@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import br.ufg.inf.es.saep.sandbox.dominio.Radoc;
 import br.ufg.inf.es.saep.sandbox.dominio.Relato;
@@ -20,6 +21,8 @@ public class RadocFabrica {
 	 */
 	public Radoc novoRadoc() {
 
+		Random rd = new Random();
+
 		Map<String, Valor> valores = new HashMap<String, Valor>(1);
 		valores.put("ano", new Valor(2016));
 
@@ -29,7 +32,7 @@ public class RadocFabrica {
 		relatos.add(new Relato("b", valores));
 		relatos.add(new Relato("a", valores));
 
-		Radoc radoc = new Radoc("r", 0, relatos);
+		Radoc radoc = new Radoc(String.valueOf(rd.nextInt(1000)), 0, relatos);
 
 		return radoc;
 	}

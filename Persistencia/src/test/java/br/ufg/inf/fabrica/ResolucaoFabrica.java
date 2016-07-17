@@ -30,7 +30,23 @@ public class ResolucaoFabrica {
 		Regra regra = new Regra("var", 1, "desc", f, f, "exp", "entao", "senao", "tipoRelato", f, dd);
 		regras.add(regra);
 
-		Resolucao resolucao = new Resolucao(String.valueOf(rd.nextInt(100)), "nome", "descricao", new Date(), regras);
+		Resolucao resolucao = new Resolucao(String.valueOf(rd.nextInt(1000)), "nome", "descricao", new Date(), regras);
+
+		return resolucao;
+	}
+
+	/**
+	 * Método responsável por criar um novo parecer com um id fixo.
+	 */
+	public Resolucao novaResolucaoComIdFixo(String id) {
+		List<Regra> regras = new ArrayList<Regra>();
+		List<String> dd = new ArrayList<String>(1);
+		dd.add("a");
+
+		Regra regra = new Regra("var", 1, "desc", f, f, "exp", "entao", "senao", "tipoRelato", f, dd);
+		regras.add(regra);
+
+		Resolucao resolucao = new Resolucao(id, "nome", "descricao", new Date(), regras);
 
 		return resolucao;
 	}

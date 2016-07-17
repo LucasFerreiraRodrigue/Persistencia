@@ -1,10 +1,19 @@
 package br.ufg.inf.util;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+
+import br.ufg.inf.es.saep.sandbox.dominio.Avaliavel;
+import br.ufg.inf.es.saep.sandbox.dominio.Parecer;
+import br.ufg.inf.es.saep.sandbox.dominio.Radoc;
+import br.ufg.inf.es.saep.sandbox.dominio.Resolucao;
+import br.ufg.inf.es.saep.sandbox.dominio.Tipo;
+import br.ufg.inf.es.saep.sandbox.dominio.Valor;
 
 /**
  * Classe responsável por armazenar os métodos que serão utilizados para
@@ -43,6 +52,14 @@ public class XMLParserUtil {
 							sb.append(objectToXmlString(map.get(objet)));
 						}
 						sb.append("</").append(field.getName()).append(">").append("\n");
+					} else if (field.get(obj) instanceof Avaliavel) {
+						sb.append("<").append(field.getName()).append(">\n");
+						sb.append(objectToXmlString(field.get(obj)));
+						sb.append("</").append(field.getName()).append(">").append("\n");
+					} else if (field.get(obj) instanceof Valor) {
+						sb.append("<").append(field.getName()).append(">\n");
+						sb.append(objectToXmlString(field.get(obj)));
+						sb.append("</").append(field.getName()).append(">").append("\n");
 					} else {
 						sb.append("<").append(field.getName()).append(">");
 						sb.append(field.get(obj));
@@ -57,8 +74,39 @@ public class XMLParserUtil {
 
 	}
 
-	private static boolean isPrimitiveInstanceObject(Object obj, Field field) throws IllegalAccessException {
-		return field.get(obj) instanceof Number || field.get(obj) instanceof String
-				|| field.get(obj) instanceof Boolean;
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public static void xmlStringToObject(Class obj, String xmlString) {
+
+		if (obj.isAssignableFrom(Resolucao.class)) {
+			instanciateResolucao(obj);
+		} else if (obj.isAssignableFrom(Tipo.class)) {
+		} else if (obj.isAssignableFrom(Parecer.class)) {
+		} else if (obj.isAssignableFrom(Radoc.class)) {
+		}
+
 	}
+
+	private static void instanciateResolucao(Object obj) {
+		Resolucao reso = (Resolucao) obj;
+
+		for (Constructor<?> constructor : obj.getClass().getConstructors()) {
+			try {
+				constructor.newInstance(reso.getId(), reso.getNome(), reso.getNome(), reso.getDataAprovacao(),
+						reso.getRegras());
+			} catch (InstantiationException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IllegalArgumentException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (InvocationTargetException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+
 }

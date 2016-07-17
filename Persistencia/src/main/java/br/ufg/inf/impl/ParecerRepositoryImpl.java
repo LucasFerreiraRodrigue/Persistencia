@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -26,6 +28,8 @@ public class ParecerRepositoryImpl implements ParecerRepository {
 	private static String NOME_ARQUIVO_PARECER = "/Pareceres/Parecer";
 	private static String NOME_ARQUIVO_RADOC = "/Radocs/Radocs";
 	private static String EXTENSAO_XML = ".xml";
+
+	Logger log = Logger.getLogger(ParecerRepositoryImpl.class.getName());
 
 	private File parecerFile = new File(ParecerRepositoryImpl.CAMINHO_BASE + ParecerRepositoryImpl.NOME_ARQUIVO_PARECER
 			+ ParecerRepositoryImpl.EXTENSAO_XML);
@@ -56,7 +60,7 @@ public class ParecerRepositoryImpl implements ParecerRepository {
 				this.parecerFile.getParentFile().mkdirs();
 				jaxbMarshaller.marshal(pareceresSalvos, this.parecerFile);
 			} catch (JAXBException e) {
-				e.printStackTrace();
+				log.log(Level.SEVERE, e.getMessage(), e);
 			}
 		}
 
@@ -95,7 +99,7 @@ public class ParecerRepositoryImpl implements ParecerRepository {
 				this.parecerFile.getParentFile().mkdirs();
 				jaxbMarshaller.marshal(pareceresSalvos, this.parecerFile);
 			} catch (JAXBException e) {
-				e.printStackTrace();
+				log.log(Level.SEVERE, e.getMessage(), e);
 			}
 		}
 
@@ -111,13 +115,11 @@ public class ParecerRepositoryImpl implements ParecerRepository {
 			Files.write(Paths.get(this.parecerFile.getPath()), XMLParserUtil.objectToXmlString(parecer).getBytes(),
 					StandardOpenOption.APPEND);
 		} catch (IOException e) {
-			// exception handling left as an exercise for the reader
+			log.log(Level.SEVERE, e.getMessage(), e);
 		} catch (IllegalArgumentException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			log.log(Level.SEVERE, e.getMessage(), e);
 		} catch (IllegalAccessException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			log.log(Level.SEVERE, e.getMessage(), e);
 		}
 
 	}
@@ -153,7 +155,7 @@ public class ParecerRepositoryImpl implements ParecerRepository {
 				this.parecerFile.getParentFile().mkdirs();
 				jaxbMarshaller.marshal(pareceresSalvos, this.parecerFile);
 			} catch (JAXBException e) {
-				e.printStackTrace();
+				log.log(Level.SEVERE, e.getMessage(), e);
 			}
 		}
 
@@ -178,7 +180,7 @@ public class ParecerRepositoryImpl implements ParecerRepository {
 					}
 				}
 			} catch (JAXBException e) {
-				e.printStackTrace();
+				log.log(Level.SEVERE, e.getMessage(), e);
 			}
 		}
 		return retorno;
@@ -209,7 +211,7 @@ public class ParecerRepositoryImpl implements ParecerRepository {
 				jaxbMarshaller.marshal(pareceres, parecerFile);
 
 			} catch (JAXBException e) {
-				e.printStackTrace();
+				log.log(Level.SEVERE, e.getMessage(), e);
 			}
 		}
 	}
@@ -232,7 +234,7 @@ public class ParecerRepositoryImpl implements ParecerRepository {
 					}
 				}
 			} catch (JAXBException e) {
-				e.printStackTrace();
+				log.log(Level.SEVERE, e.getMessage(), e);
 			}
 		}
 
@@ -249,13 +251,11 @@ public class ParecerRepositoryImpl implements ParecerRepository {
 			Files.write(Paths.get(this.radocFile.getPath()), XMLParserUtil.objectToXmlString(radoc).getBytes(),
 					StandardOpenOption.APPEND);
 		} catch (IOException e) {
-			// exception handling left as an exercise for the reader
+			log.log(Level.SEVERE, e.getMessage(), e);
 		} catch (IllegalArgumentException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			log.log(Level.SEVERE, e.getMessage(), e);
 		} catch (IllegalAccessException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			log.log(Level.SEVERE, e.getMessage(), e);
 		}
 
 		return radoc.getId();
@@ -284,7 +284,7 @@ public class ParecerRepositoryImpl implements ParecerRepository {
 				jaxbMarshaller.marshal(radocs, radocFile);
 
 			} catch (JAXBException e) {
-				e.printStackTrace();
+				log.log(Level.SEVERE, e.getMessage(), e);
 			}
 		}
 	}

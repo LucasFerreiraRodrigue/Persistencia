@@ -1,12 +1,16 @@
 package br.ufg.inf.impl;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -27,6 +31,8 @@ public class ResolucaoRespositoryImpl implements ResolucaoRepository {
 	private static String NOME_ARQUIVO_TIPO = "/Tipos/Tipo";
 	private static String XML = ".xml";
 
+	Logger log = Logger.getLogger(ResolucaoRespositoryImpl.class.getName());
+
 	private File resolucaoFile = new File(ResolucaoRespositoryImpl.CAMINHO_BASE
 			+ ResolucaoRespositoryImpl.NOME_ARQUIVO_RESOLUCAO + ResolucaoRespositoryImpl.XML);
 
@@ -36,28 +42,11 @@ public class ResolucaoRespositoryImpl implements ResolucaoRepository {
 	public Resolucao byId(String arg0) {
 
 		Resolucao retorno = null;
-		if (this.resolucaoFile.exists()) {
 
-			JAXBContext jaxbContext;
-			try {
-				jaxbContext = JAXBContext.newInstance(Resolucoes.class);
-				Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
-
-				Resolucoes resolucoes = (Resolucoes) jaxbUnmarshaller.unmarshal(this.resolucaoFile);
-
-				for (Resolucao resolucao : resolucoes.getResolucoes()) {
-					if (resolucao.getId().equals(arg0)) {
-						retorno = resolucao;
-						break;
-					}
-				}
-			} catch (JAXBException e) {
-				e.printStackTrace();
-			}
-		}
 		return retorno;
 	}
 
+	@SuppressWarnings("resource")
 	public String persiste(Resolucao resolucao) {
 
 		this.resolucaoFile.getParentFile().mkdirs();
@@ -66,20 +55,29 @@ public class ResolucaoRespositoryImpl implements ResolucaoRepository {
 			if (!this.resolucaoFile.exists()) {
 				this.resolucaoFile.createNewFile();
 			}
+			Scanner scanner = new Scanner(this.resolucaoFile);
+
+			while (scanner.hasNextLine()) {
+				String line = scanner.nextLine();
+				if (line.contains("<id>" + resolucao.getId() + "</id>")) {
+					return null;
+				}
+			}
 			Files.write(Paths.get(this.resolucaoFile.getPath()), XMLParserUtil.objectToXmlString(resolucao).getBytes(),
 					StandardOpenOption.APPEND);
+		} catch (FileNotFoundException e) {
+			log.log(Level.SEVERE, e.getMessage(), e);
 		} catch (IOException e) {
-			// exception handling left as an exercise for the reader
+			log.log(Level.SEVERE, e.getMessage(), e);
 		} catch (IllegalArgumentException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			log.log(Level.SEVERE, e.getMessage(), e);
 		} catch (IllegalAccessException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			log.log(Level.SEVERE, e.getMessage(), e);
 		}
 		return resolucao.getId();
 	}
 
+	@SuppressWarnings("resource")
 	public void persisteTipo(Tipo tipo) {
 
 		this.tipoFile.getParentFile().mkdirs();
@@ -88,16 +86,22 @@ public class ResolucaoRespositoryImpl implements ResolucaoRepository {
 			if (!this.tipoFile.exists()) {
 				this.tipoFile.createNewFile();
 			}
+			Scanner scanner = new Scanner(this.resolucaoFile);
+
+			while (scanner.hasNextLine()) {
+				String line = scanner.nextLine();
+				if (line.contains("<id>" + tipo.getId() + "</id>")) {
+					return;
+				}
+			}
 			Files.write(Paths.get(this.tipoFile.getPath()), XMLParserUtil.objectToXmlString(tipo).getBytes(),
 					StandardOpenOption.APPEND);
 		} catch (IOException e) {
-			// exception handling left as an exercise for the reader
+			log.log(Level.SEVERE, e.getMessage(), e);
 		} catch (IllegalArgumentException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			log.log(Level.SEVERE, e.getMessage(), e);
 		} catch (IllegalAccessException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			log.log(Level.SEVERE, e.getMessage(), e);
 		}
 
 	}
@@ -130,7 +134,7 @@ public class ResolucaoRespositoryImpl implements ResolucaoRepository {
 
 				executado = true;
 			} catch (JAXBException e) {
-				e.printStackTrace();
+				log.log(Level.SEVERE, e.getMessage(), e);
 			}
 		}
 		return executado;
@@ -159,31 +163,28 @@ public class ResolucaoRespositoryImpl implements ResolucaoRepository {
 
 				jaxbMarshaller.marshal(tipos, this.tipoFile);
 			} catch (JAXBException e) {
-				e.printStackTrace();
+				log.log(Level.SEVERE, e.getMessage(), e);
 			}
 		}
 	}
 
+	@SuppressWarnings("resource")
 	public List<String> resolucoes() {
-		final List<String> listaIdResolucao = new ArrayList<String>();
+		final List<String> listaId = new ArrayList<String>();
 
-		if (this.resolucaoFile.exists()) {
-			JAXBContext jaxbContext;
-			try {
-				jaxbContext = JAXBContext.newInstance(Resolucoes.class);
-				Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
+		try {
+			Scanner scanner = new Scanner(this.resolucaoFile);
 
-				Resolucoes resolucoes = (Resolucoes) jaxbUnmarshaller.unmarshal(this.resolucaoFile);
-
-				for (Resolucao resolucao : resolucoes.getResolucoes()) {
-					listaIdResolucao.add(resolucao.getId());
+			while (scanner.hasNextLine()) {
+				String line = scanner.nextLine();
+				if (line.contains("<id>")) {
+					listaId.add(line.replace("<id>", "").replace("</id>", ""));
 				}
-
-			} catch (JAXBException e) {
-				e.printStackTrace();
 			}
+		} catch (FileNotFoundException e) {
+			log.log(Level.SEVERE, e.getMessage(), e);
 		}
-		return listaIdResolucao;
+		return listaId;
 	}
 
 	public Tipo tipoPeloCodigo(String codigo) {
@@ -207,7 +208,7 @@ public class ResolucaoRespositoryImpl implements ResolucaoRepository {
 				}
 
 			} catch (JAXBException e) {
-				e.printStackTrace();
+				log.log(Level.SEVERE, e.getMessage(), e);
 			}
 		}
 		return tipoRetorno;
@@ -231,7 +232,7 @@ public class ResolucaoRespositoryImpl implements ResolucaoRepository {
 					}
 				}
 			} catch (JAXBException e) {
-				e.printStackTrace();
+				log.log(Level.SEVERE, e.getMessage(), e);
 			}
 		}
 		return listaTipo;
