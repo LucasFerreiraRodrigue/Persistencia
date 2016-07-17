@@ -6,7 +6,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import br.ufg.inf.es.saep.sandbox.dominio.Resolucao;
 import br.ufg.inf.es.saep.sandbox.dominio.ResolucaoRepository;
+import br.ufg.inf.es.saep.sandbox.dominio.Tipo;
 import br.ufg.inf.fabrica.ResolucaoFabrica;
 import br.ufg.inf.fabrica.TipoFabrica;
 
@@ -31,7 +33,20 @@ public class ResolucaoRespositoryTest {
 
 	@Test
 	public void byId() {
-		// TODO
+
+		final String idSalvo = this.resolucaoRepository.persiste(this.resolucaoFabrica.novaResolucao());
+
+		final Resolucao resolucao = this.resolucaoRepository.byId(idSalvo);
+
+		Assert.assertNotNull(resolucao);
+	}
+
+	@Test
+	public void byIdInexistente() {
+
+		final Resolucao resolucao = this.resolucaoRepository.byId("inexistente");
+
+		Assert.assertNull(resolucao);
 	}
 
 	@Test
@@ -52,8 +67,22 @@ public class ResolucaoRespositoryTest {
 		Assert.assertNull(idSalvo);
 	}
 
+	@Test
 	public void remove() {
-		// TODO Auto-generated method stub
+
+		final String id = this.resolucaoRepository.persiste(this.resolucaoFabrica.novaResolucao());
+
+		final Boolean removido = this.resolucaoRepository.remove(id);
+
+		Assert.assertTrue(removido);
+	}
+
+	@Test
+	public void removeNadaParaRemover() {
+
+		final Boolean removido = this.resolucaoRepository.remove("id");
+
+		Assert.assertFalse(removido);
 	}
 
 	@Test
@@ -78,12 +107,26 @@ public class ResolucaoRespositoryTest {
 
 	}
 
+	@Test
 	public void tipoPeloCodigo() {
-		// TODO Auto-generated method stub
+		final Tipo tipo = this.tipoFabrica.novoTipo();
+
+		this.resolucaoRepository.persisteTipo(tipo);
+
+		final Tipo tipoRetorno = this.resolucaoRepository.tipoPeloCodigo(tipo.getId());
+
+		Assert.assertNotNull(tipoRetorno);
 	}
 
+	@Test
 	public void tiposPeloNome() {
-		// TODO Auto-generated method stub
+		final Tipo tipo = this.tipoFabrica.novoTipo();
+
+		this.resolucaoRepository.persisteTipo(tipo);
+
+		final List<Tipo> listaTipo = this.resolucaoRepository.tiposPeloNome(tipo.getNome());
+
+		Assert.assertFalse(listaTipo.isEmpty());
 	}
 
 }

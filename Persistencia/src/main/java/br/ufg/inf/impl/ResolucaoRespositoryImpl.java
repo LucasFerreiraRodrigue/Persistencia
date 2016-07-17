@@ -135,6 +135,8 @@ public class ResolucaoRespositoryImpl implements ResolucaoRepository {
 				executado = true;
 			} catch (JAXBException e) {
 				log.log(Level.SEVERE, e.getMessage(), e);
+			} catch (Exception e) {
+				log.log(Level.SEVERE, e.getMessage(), e);
 			}
 		}
 		return executado;
@@ -232,6 +234,8 @@ public class ResolucaoRespositoryImpl implements ResolucaoRepository {
 					}
 				}
 			} catch (JAXBException e) {
+				log.log(Level.SEVERE, e.getMessage(), e);
+			} catch (Exception e) {
 				log.log(Level.SEVERE, e.getMessage(), e);
 			}
 		}

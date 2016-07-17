@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -105,12 +106,20 @@ public class ParecerRepositoryImpl implements ParecerRepository {
 
 	}
 
+	@SuppressWarnings("resource")
 	public void persisteParecer(Parecer parecer) {
 		this.parecerFile.getParentFile().mkdirs();
 
 		try {
 			if (!this.parecerFile.exists()) {
 				this.parecerFile.createNewFile();
+			}
+			Scanner scanner = new Scanner(this.parecerFile);
+			while (scanner.hasNextLine()) {
+				String line = scanner.nextLine();
+				if (line.contains("<id>" + parecer.getId() + "</id>")) {
+					return;
+				}
 			}
 			Files.write(Paths.get(this.parecerFile.getPath()), XMLParserUtil.objectToXmlString(parecer).getBytes(),
 					StandardOpenOption.APPEND);
@@ -241,12 +250,20 @@ public class ParecerRepositoryImpl implements ParecerRepository {
 		return retorno;
 	}
 
+	@SuppressWarnings("resource")
 	public String persisteRadoc(Radoc radoc) {
 		this.radocFile.getParentFile().mkdirs();
 
 		try {
 			if (!this.radocFile.exists()) {
 				this.radocFile.createNewFile();
+			}
+			Scanner scanner = new Scanner(this.radocFile);
+			while (scanner.hasNextLine()) {
+				String line = scanner.nextLine();
+				if (line.contains("<id>" + radoc.getId() + "</id>")) {
+					return null;
+				}
 			}
 			Files.write(Paths.get(this.radocFile.getPath()), XMLParserUtil.objectToXmlString(radoc).getBytes(),
 					StandardOpenOption.APPEND);
