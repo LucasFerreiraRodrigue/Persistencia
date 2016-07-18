@@ -175,22 +175,6 @@ public class ParecerRepositoryImpl implements ParecerRepository {
 
 		if (this.parecerFile.exists()) {
 
-			JAXBContext jaxbContext;
-			try {
-				jaxbContext = JAXBContext.newInstance(Pareceres.class);
-				Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
-
-				Pareceres pareceres = (Pareceres) jaxbUnmarshaller.unmarshal(this.parecerFile);
-
-				for (Parecer parecer : pareceres.getPareceres()) {
-					if (parecer.getId().equals(id)) {
-						retorno = parecer;
-						break;
-					}
-				}
-			} catch (JAXBException e) {
-				log.log(Level.SEVERE, e.getMessage(), e);
-			}
 		}
 		return retorno;
 	}

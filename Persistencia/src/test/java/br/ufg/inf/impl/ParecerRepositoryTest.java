@@ -67,7 +67,7 @@ public class ParecerRepositoryTest {
 
 	@Test
 	public void byId() {
-		// TODO Auto-generated method stub Parecer by id
+		this.parecerRepository.byId("1");
 	}
 
 	@Test

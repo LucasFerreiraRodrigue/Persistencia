@@ -1,28 +1,23 @@
 package br.ufg.inf.impl;
 
 import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.xml.DomDriver;
 
 import br.ufg.inf.domain.Resolucoes;
 import br.ufg.inf.domain.Tipos;
+import br.ufg.inf.es.saep.sandbox.dominio.Regra;
 import br.ufg.inf.es.saep.sandbox.dominio.Resolucao;
 import br.ufg.inf.es.saep.sandbox.dominio.ResolucaoRepository;
 import br.ufg.inf.es.saep.sandbox.dominio.Tipo;
-import br.ufg.inf.util.XMLParserUtil;
 
 public class ResolucaoRespositoryImpl implements ResolucaoRepository {
 
@@ -39,68 +34,96 @@ public class ResolucaoRespositoryImpl implements ResolucaoRepository {
 	private File tipoFile = new File(ResolucaoRespositoryImpl.CAMINHO_BASE + ResolucaoRespositoryImpl.NOME_ARQUIVO_TIPO
 			+ ResolucaoRespositoryImpl.XML);
 
-	public Resolucao byId(String arg0) {
+	public Resolucao byId(String id) {
 
 		Resolucao retorno = null;
+
+		if (this.resolucaoFile.exists()) {
+
+			XStream stream = new XStream();
+			stream.alias("Resolucoes", Resolucoes.class);
+			stream.alias("Resolucao", Resolucao.class);
+			stream.alias("Regra", Regra.class);
+
+			Resolucoes resolucoes = (Resolucoes) stream.fromXML(this.resolucaoFile);
+
+			for (Resolucao resolucao : resolucoes.getResolucoes()) {
+				if (resolucao.getId().equals(id)) {
+					retorno = resolucao;
+				}
+			}
+		}
 
 		return retorno;
 	}
 
-	@SuppressWarnings("resource")
 	public String persiste(Resolucao resolucao) {
 
 		this.resolucaoFile.getParentFile().mkdirs();
 
-		try {
-			if (!this.resolucaoFile.exists()) {
-				this.resolucaoFile.createNewFile();
-			}
-			Scanner scanner = new Scanner(this.resolucaoFile);
+		XStream stream = new XStream(new DomDriver());
+		stream.alias("Resolucoes", Resolucoes.class);
+		stream.alias("Resolucao", Resolucao.class);
+		stream.alias("Regra", Regra.class);
 
-			while (scanner.hasNextLine()) {
-				String line = scanner.nextLine();
-				if (line.contains("<id>" + resolucao.getId() + "</id>")) {
+		Resolucoes resolucoes = new Resolucoes();
+
+		try {
+			if (this.resolucaoFile.exists()) {
+				resolucoes = (Resolucoes) stream.fromXML(this.resolucaoFile);
+			} else {
+				this.resolucaoFile.createNewFile();
+				resolucoes.setResolucoes(new ArrayList<Resolucao>());
+			}
+
+			for (Resolucao resol : resolucoes.getResolucoes()) {
+				if (resol.getId().equals(resolucao.getId())) {
 					return null;
 				}
 			}
-			Files.write(Paths.get(this.resolucaoFile.getPath()), XMLParserUtil.objectToXmlString(resolucao).getBytes(),
-					StandardOpenOption.APPEND);
-		} catch (FileNotFoundException e) {
-			log.log(Level.SEVERE, e.getMessage(), e);
+
+			resolucoes.getResolucoes().add(resolucao);
+
+			final OutputStream out = new FileOutputStream(this.resolucaoFile);
+
+			stream.toXML(resolucoes, out);
 		} catch (IOException e) {
 			log.log(Level.SEVERE, e.getMessage(), e);
-		} catch (IllegalArgumentException e) {
-			log.log(Level.SEVERE, e.getMessage(), e);
-		} catch (IllegalAccessException e) {
-			log.log(Level.SEVERE, e.getMessage(), e);
 		}
+
 		return resolucao.getId();
 	}
 
-	@SuppressWarnings("resource")
 	public void persisteTipo(Tipo tipo) {
 
 		this.tipoFile.getParentFile().mkdirs();
 
-		try {
-			if (!this.tipoFile.exists()) {
-				this.tipoFile.createNewFile();
-			}
-			Scanner scanner = new Scanner(this.resolucaoFile);
+		XStream stream = new XStream(new DomDriver());
+		stream.alias("Tipos", Tipos.class);
+		stream.alias("Tipo", Tipo.class);
 
-			while (scanner.hasNextLine()) {
-				String line = scanner.nextLine();
-				if (line.contains("<id>" + tipo.getId() + "</id>")) {
+		Tipos tipos = new Tipos();
+
+		try {
+			if (this.tipoFile.exists()) {
+				tipos = (Tipos) stream.fromXML(this.tipoFile);
+			} else {
+				this.tipoFile.createNewFile();
+				tipos.setTipos(new ArrayList<Tipo>());
+			}
+
+			for (Tipo tip : tipos.getTipos()) {
+				if (tip.getId().equals(tip.getId())) {
 					return;
 				}
 			}
-			Files.write(Paths.get(this.tipoFile.getPath()), XMLParserUtil.objectToXmlString(tipo).getBytes(),
-					StandardOpenOption.APPEND);
+
+			tipos.getTipos().add(tipo);
+
+			final OutputStream out = new FileOutputStream(this.tipoFile);
+
+			stream.toXML(tipos, out);
 		} catch (IOException e) {
-			log.log(Level.SEVERE, e.getMessage(), e);
-		} catch (IllegalArgumentException e) {
-			log.log(Level.SEVERE, e.getMessage(), e);
-		} catch (IllegalAccessException e) {
 			log.log(Level.SEVERE, e.getMessage(), e);
 		}
 
@@ -114,27 +137,35 @@ public class ResolucaoRespositoryImpl implements ResolucaoRepository {
 
 			Resolucao resolucaoRemover = null;
 
-			JAXBContext jaxbContext;
 			try {
-				jaxbContext = JAXBContext.newInstance(Resolucoes.class);
-				Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
-				Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
-				jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
 
-				Resolucoes resolucoes = (Resolucoes) jaxbUnmarshaller.unmarshal(this.resolucaoFile);
+				if (this.resolucaoFile.exists()) {
 
-				for (Resolucao resolucao : resolucoes.getResolucoes()) {
-					if (resolucao.getId().equals(id)) {
-						resolucaoRemover = resolucao;
+					XStream stream = new XStream();
+					stream.alias("Resolucoes", Resolucoes.class);
+					stream.alias("Resolucao", Resolucao.class);
+					stream.alias("Regra", Regra.class);
+
+					Resolucoes resolucoes = (Resolucoes) stream.fromXML(this.resolucaoFile);
+
+					for (Resolucao resolucao : resolucoes.getResolucoes()) {
+						if (resolucao.getId().equals(id)) {
+							resolucaoRemover = resolucao;
+						}
+					}
+
+					if (resolucaoRemover != null) {
+						resolucoes.getResolucoes().remove(resolucaoRemover);
+
+						final OutputStream out = new FileOutputStream(this.resolucaoFile);
+
+						stream.toXML(resolucoes, out);
+
+						executado = true;
+
 					}
 				}
-				resolucoes.getResolucoes().remove(resolucaoRemover);
 
-				jaxbMarshaller.marshal(resolucoes, resolucaoFile);
-
-				executado = true;
-			} catch (JAXBException e) {
-				log.log(Level.SEVERE, e.getMessage(), e);
 			} catch (Exception e) {
 				log.log(Level.SEVERE, e.getMessage(), e);
 			}
@@ -143,49 +174,59 @@ public class ResolucaoRespositoryImpl implements ResolucaoRepository {
 	}
 
 	public void removeTipo(String codigo) {
-		Tipo tipoRemover = null;
 
 		if (this.tipoFile.exists()) {
 
-			JAXBContext jaxbContext;
+			Tipo tipoRemover = null;
+
 			try {
-				jaxbContext = JAXBContext.newInstance(Tipos.class);
-				Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
-				Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
-				jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
 
-				Tipos tipos = (Tipos) jaxbUnmarshaller.unmarshal(this.tipoFile);
+				if (this.tipoFile.exists()) {
 
-				for (Tipo tipo : tipos.getTipos()) {
-					if (tipo.getId().equals(codigo)) {
-						tipoRemover = tipo;
+					XStream stream = new XStream();
+					stream.alias("Tipos", Tipos.class);
+					stream.alias("Tipo", Tipo.class);
+
+					Tipos tipos = (Tipos) stream.fromXML(this.tipoFile);
+
+					for (Tipo tipo : tipos.getTipos()) {
+						if (tipo.getId().equals(codigo)) {
+							tipoRemover = tipo;
+						}
+					}
+
+					if (tipoRemover != null) {
+						tipos.getTipos().remove(tipoRemover);
+
+						final OutputStream out = new FileOutputStream(this.tipoFile);
+
+						stream.toXML(tipos, out);
 					}
 				}
-				tipos.getTipos().remove(tipoRemover);
 
-				jaxbMarshaller.marshal(tipos, this.tipoFile);
-			} catch (JAXBException e) {
+			} catch (Exception e) {
 				log.log(Level.SEVERE, e.getMessage(), e);
 			}
 		}
 	}
 
-	@SuppressWarnings("resource")
 	public List<String> resolucoes() {
 		final List<String> listaId = new ArrayList<String>();
 
-		try {
-			Scanner scanner = new Scanner(this.resolucaoFile);
+		if (this.resolucaoFile.exists()) {
 
-			while (scanner.hasNextLine()) {
-				String line = scanner.nextLine();
-				if (line.contains("<id>")) {
-					listaId.add(line.replace("<id>", "").replace("</id>", ""));
-				}
+			XStream stream = new XStream();
+			stream.alias("Resolucoes", Resolucoes.class);
+			stream.alias("Resolucao", Resolucao.class);
+			stream.alias("Regra", Regra.class);
+
+			Resolucoes resolucoes = (Resolucoes) stream.fromXML(this.resolucaoFile);
+
+			for (Resolucao resolucao : resolucoes.getResolucoes()) {
+				listaId.add(resolucao.getId());
 			}
-		} catch (FileNotFoundException e) {
-			log.log(Level.SEVERE, e.getMessage(), e);
 		}
+
 		return listaId;
 	}
 
@@ -194,23 +235,17 @@ public class ResolucaoRespositoryImpl implements ResolucaoRepository {
 
 		if (this.tipoFile.exists()) {
 
-			JAXBContext jaxbContext;
-			try {
+			XStream stream = new XStream();
+			stream.alias("Tipos", Tipos.class);
+			stream.alias("Tipo", Tipo.class);
 
-				jaxbContext = JAXBContext.newInstance(Tipos.class);
-				Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
+			Tipos tipos = (Tipos) stream.fromXML(this.tipoFile);
 
-				Tipos resolucoes = (Tipos) jaxbUnmarshaller.unmarshal(this.tipoFile);
-
-				for (Tipo tipo : resolucoes.getTipos()) {
-					if (tipo.getId().equals(codigo)) {
-						tipoRetorno = tipo;
-						break;
-					}
+			for (Tipo tipo : tipos.getTipos()) {
+				if (tipo.getId().equals(codigo)) {
+					tipoRetorno = tipo;
+					break;
 				}
-
-			} catch (JAXBException e) {
-				log.log(Level.SEVERE, e.getMessage(), e);
 			}
 		}
 		return tipoRetorno;
@@ -221,22 +256,16 @@ public class ResolucaoRespositoryImpl implements ResolucaoRepository {
 
 		if (this.tipoFile.exists()) {
 
-			JAXBContext jaxbContext;
-			try {
-				jaxbContext = JAXBContext.newInstance(Tipos.class);
-				Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
+			XStream stream = new XStream();
+			stream.alias("Tipos", Tipos.class);
+			stream.alias("Tipo", Tipo.class);
 
-				Tipos tipos = (Tipos) jaxbUnmarshaller.unmarshal(this.tipoFile);
+			Tipos tipos = (Tipos) stream.fromXML(this.tipoFile);
 
-				for (Tipo tipo : tipos.getTipos()) {
-					if (tipo.getNome().equals(nome)) {
-						listaTipo.add(tipo);
-					}
+			for (Tipo tipo : tipos.getTipos()) {
+				if (tipo.getNome().equals(nome)) {
+					listaTipo.add(tipo);
 				}
-			} catch (JAXBException e) {
-				log.log(Level.SEVERE, e.getMessage(), e);
-			} catch (Exception e) {
-				log.log(Level.SEVERE, e.getMessage(), e);
 			}
 		}
 		return listaTipo;

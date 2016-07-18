@@ -33,9 +33,11 @@ public class ResolucaoRespositoryTest {
 
 	@Test
 	public void byId() {
+		String idSalvo = null;
+		do {
 
-		final String idSalvo = this.resolucaoRepository.persiste(this.resolucaoFabrica.novaResolucao());
-
+			idSalvo = this.resolucaoRepository.persiste(this.resolucaoFabrica.novaResolucao());
+		} while (idSalvo == null);
 		final Resolucao resolucao = this.resolucaoRepository.byId(idSalvo);
 
 		Assert.assertNotNull(resolucao);
@@ -97,14 +99,27 @@ public class ResolucaoRespositoryTest {
 
 	@Test
 	public void persisteTipo() {
+		final Tipo tipo = this.tipoFabrica.novoTipo();
 
-		this.resolucaoRepository.persisteTipo(this.tipoFabrica.novoTipo());
+		this.resolucaoRepository.persisteTipo(tipo);
 
+		final Tipo tipoRetorno = this.resolucaoRepository.tipoPeloCodigo(tipo.getId());
+
+		Assert.assertNotNull(tipoRetorno);
 	}
 
+	@Test
 	public void removeTipo() {
-		// TODO Auto-generated method stub
 
+		final Tipo tipo = this.tipoFabrica.novoTipo();
+
+		this.resolucaoRepository.persisteTipo(tipo);
+
+		this.resolucaoRepository.removeTipo(tipo.getId());
+
+		final Tipo tipoRetorno = this.resolucaoRepository.tipoPeloCodigo(tipo.getId());
+
+		Assert.assertNull(tipoRetorno);
 	}
 
 	@Test
