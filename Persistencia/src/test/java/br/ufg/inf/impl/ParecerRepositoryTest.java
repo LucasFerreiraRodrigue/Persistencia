@@ -1,12 +1,18 @@
 package br.ufg.inf.impl;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import br.ufg.inf.es.saep.sandbox.dominio.Avaliavel;
+import br.ufg.inf.es.saep.sandbox.dominio.ExisteParecerReferenciandoRadoc;
+import br.ufg.inf.es.saep.sandbox.dominio.IdentificadorDesconhecido;
+import br.ufg.inf.es.saep.sandbox.dominio.IdentificadorExistente;
 import br.ufg.inf.es.saep.sandbox.dominio.Nota;
+import br.ufg.inf.es.saep.sandbox.dominio.Parecer;
 import br.ufg.inf.es.saep.sandbox.dominio.ParecerRepository;
 import br.ufg.inf.es.saep.sandbox.dominio.Pontuacao;
+import br.ufg.inf.es.saep.sandbox.dominio.Radoc;
 import br.ufg.inf.es.saep.sandbox.dominio.Valor;
 import br.ufg.inf.fabrica.ParecerFabrica;
 import br.ufg.inf.fabrica.RadocFabrica;
@@ -37,8 +43,15 @@ public class ParecerRepositoryTest {
 
 		Nota nota = new Nota(o, s, "simples erro");
 
-		this.parecerRepository.adicionaNota("id", nota);
+		final Parecer parecer = this.parecerFabrica.novoParecer();
 
+		this.parecerRepository.persisteParecer(parecer);
+
+		this.parecerRepository.adicionaNota(parecer.getId(), nota);
+
+		final Parecer parecerRetorno = this.parecerRepository.byId(parecer.getId());
+
+		Assert.assertTrue(parecerRetorno.getNotas().size() > parecer.getNotas().size());
 	}
 
 	@Test
@@ -48,47 +61,161 @@ public class ParecerRepositoryTest {
 
 		Nota nota = new Nota(o, s, "simples erro");
 
-		this.parecerRepository.removeNota("id", nota.getItemOriginal());
+		final Parecer parecer = this.parecerFabrica.novoParecer();
 
+		this.parecerRepository.persisteParecer(parecer);
+
+		this.parecerRepository.removeNota(parecer.getId(), nota.getItemOriginal());
+
+		final Parecer parecerRetorno = this.parecerRepository.byId(parecer.getId());
+
+		Assert.assertTrue(parecerRetorno.getNotas().isEmpty());
 	}
 
 	@Test
 	public void persisteParecer() {
 
-		this.parecerRepository.persisteParecer(this.parecerFabrica.novoParecer());
+		final Parecer parecer = this.parecerFabrica.novoParecer();
 
+		this.parecerRepository.persisteParecer(parecer);
+
+		final Parecer parecerRetorno = this.parecerRepository.byId(parecer.getId());
+
+		Assert.assertNotNull(parecerRetorno);
+	}
+
+	@Test(expected = IdentificadorExistente.class)
+	public void persisteParecerJaExistente() {
+
+		final Parecer parecer = this.parecerFabrica.novoParecer();
+
+		this.parecerRepository.persisteParecer(parecer);
+
+		this.parecerRepository.persisteParecer(parecer);
+
+		final Parecer parecerRetorno = this.parecerRepository.byId(parecer.getId());
+
+		Assert.assertNotNull(parecerRetorno);
 	}
 
 	@Test
 	public void atualizaFundamentacao() {
+		final Parecer parecer = this.parecerFabrica.novoParecer();
+
+		this.parecerRepository.persisteParecer(parecer);
+
+		this.parecerRepository.atualizaFundamentacao(parecer.getId(), "novafundamentacao");
+
+		final Parecer parecerRetorno = this.parecerRepository.byId(parecer.getId());
+
+		Assert.assertNotEquals(parecer.getFundamentacao(), parecerRetorno.getFundamentacao());
+	}
+
+	@Test(expected = IdentificadorDesconhecido.class)
+	public void atualizaFundamentacaoIdDesconhecido() {
+		final Parecer parecer = this.parecerFabrica.novoParecer();
+
+		this.parecerRepository.persisteParecer(parecer);
+
 		this.parecerRepository.atualizaFundamentacao("id", "novafundamentacao");
 
+		final Parecer parecerRetorno = this.parecerRepository.byId(parecer.getId());
+
+		Assert.assertNotEquals(parecer.getFundamentacao(), parecerRetorno.getFundamentacao());
 	}
 
 	@Test
 	public void byId() {
-		this.parecerRepository.byId("1");
+		final Parecer parecer = this.parecerFabrica.novoParecer();
+
+		this.parecerRepository.persisteParecer(parecer);
+
+		final Parecer parecerRetorno = this.parecerRepository.byId(parecer.getId());
+
+		Assert.assertNotNull(parecerRetorno);
 	}
 
 	@Test
 	public void removeParecer() {
-		// TODO Auto-generated method stub
+		final Parecer parecer = this.parecerFabrica.novoParecer();
+
+		this.parecerRepository.persisteParecer(parecer);
+
+		this.parecerRepository.removeParecer(parecer.getId());
+
+		final Parecer parecerRetorno = this.parecerRepository.byId(parecer.getId());
+
+		Assert.assertNull(parecerRetorno);
 
 	}
 
 	@Test
 	public void radocById() {
-		// TODO Auto-generated method stub
+		final Radoc radoc = this.radocFabrica.novoRadoc();
+
+		this.parecerRepository.persisteRadoc(radoc);
+
+		final Radoc radocRetorno = this.parecerRepository.radocById(radoc.getId());
+
+		Assert.assertNotNull(radocRetorno);
 	}
 
 	@Test
 	public void persisteRadoc() {
-		this.parecerRepository.persisteRadoc(this.radocFabrica.novoRadoc());
+		final Radoc radoc = this.radocFabrica.novoRadoc();
+
+		final String idSalvo = this.parecerRepository.persisteRadoc(radoc);
+
+		final Radoc radocRetorno = this.parecerRepository.radocById(radoc.getId());
+
+		Assert.assertNotNull(idSalvo);
+		Assert.assertNotNull(radocRetorno);
+	}
+
+	@Test(expected = IdentificadorExistente.class)
+	public void persisteRadocJaExistente() {
+		final Radoc radoc = this.radocFabrica.novoRadoc();
+
+		this.parecerRepository.persisteRadoc(radoc);
+
+		this.parecerRepository.persisteRadoc(radoc);
+
+		final Radoc radocRetorno = this.parecerRepository.radocById(radoc.getId());
+
+		Assert.assertNull(radocRetorno);
 	}
 
 	@Test
 	public void removeRadoc() {
-		// TODO Auto-generated method stub
+		final Radoc radoc = this.radocFabrica.novoRadoc();
 
+		final String idSalvo = this.parecerRepository.persisteRadoc(radoc);
+
+		this.parecerRepository.removeRadoc(radoc.getId());
+
+		final Radoc radocRetorno = this.parecerRepository.radocById(radoc.getId());
+
+		Assert.assertNotNull(idSalvo);
+		Assert.assertNull(radocRetorno);
+	}
+
+	@Test(expected = ExisteParecerReferenciandoRadoc.class)
+	public void removeRadocReferenciado() {
+
+		final Parecer parecer = this.parecerFabrica.novoParecer();
+		this.parecerRepository.persisteParecer(parecer);
+		parecer.getRadocs();
+
+		Radoc radoc = null;
+		for (String id : parecer.getRadocs()) {
+			radoc = this.radocFabrica.novoRadocIdFixo(id);
+			this.parecerRepository.persisteRadoc(radoc);
+		}
+
+		this.parecerRepository.removeRadoc(radoc.getId());
+
+		final Radoc radocRetorno = this.parecerRepository.radocById(radoc.getId());
+
+		Assert.assertNull(radocRetorno);
 	}
 }

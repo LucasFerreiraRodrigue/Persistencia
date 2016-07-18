@@ -26,13 +26,25 @@ public class RadocFabrica {
 		Map<String, Valor> valores = new HashMap<String, Valor>(1);
 		valores.put("ano", new Valor(2016));
 
-		final List<Relato> relatos = new ArrayList<Relato>(3);
+		final List<Relato> relatos = new ArrayList<Relato>();
 
 		relatos.add(new Relato("a", valores));
-		relatos.add(new Relato("b", valores));
+
+		Radoc radoc = new Radoc(String.valueOf(rd.nextInt(100000)), 0, relatos);
+
+		return radoc;
+	}
+
+	public Radoc novoRadocIdFixo(String id) {
+
+		Map<String, Valor> valores = new HashMap<String, Valor>(1);
+		valores.put("ano", new Valor(2016));
+
+		final List<Relato> relatos = new ArrayList<Relato>();
+
 		relatos.add(new Relato("a", valores));
 
-		Radoc radoc = new Radoc(String.valueOf(rd.nextInt(1000)), 0, relatos);
+		Radoc radoc = new Radoc(id, 0, relatos);
 
 		return radoc;
 	}

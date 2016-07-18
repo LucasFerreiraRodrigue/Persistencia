@@ -113,7 +113,7 @@ public class ResolucaoRespositoryImpl implements ResolucaoRepository {
 			}
 
 			for (Tipo tip : tipos.getTipos()) {
-				if (tip.getId().equals(tip.getId())) {
+				if (tip.getId().equals(tipo.getId())) {
 					return;
 				}
 			}
@@ -139,31 +139,28 @@ public class ResolucaoRespositoryImpl implements ResolucaoRepository {
 
 			try {
 
-				if (this.resolucaoFile.exists()) {
+				XStream stream = new XStream();
+				stream.alias("Resolucoes", Resolucoes.class);
+				stream.alias("Resolucao", Resolucao.class);
+				stream.alias("Regra", Regra.class);
 
-					XStream stream = new XStream();
-					stream.alias("Resolucoes", Resolucoes.class);
-					stream.alias("Resolucao", Resolucao.class);
-					stream.alias("Regra", Regra.class);
+				Resolucoes resolucoes = (Resolucoes) stream.fromXML(this.resolucaoFile);
 
-					Resolucoes resolucoes = (Resolucoes) stream.fromXML(this.resolucaoFile);
-
-					for (Resolucao resolucao : resolucoes.getResolucoes()) {
-						if (resolucao.getId().equals(id)) {
-							resolucaoRemover = resolucao;
-						}
+				for (Resolucao resolucao : resolucoes.getResolucoes()) {
+					if (resolucao.getId().equals(id)) {
+						resolucaoRemover = resolucao;
 					}
+				}
 
-					if (resolucaoRemover != null) {
-						resolucoes.getResolucoes().remove(resolucaoRemover);
+				if (resolucaoRemover != null) {
+					resolucoes.getResolucoes().remove(resolucaoRemover);
 
-						final OutputStream out = new FileOutputStream(this.resolucaoFile);
+					final OutputStream out = new FileOutputStream(this.resolucaoFile);
 
-						stream.toXML(resolucoes, out);
+					stream.toXML(resolucoes, out);
 
-						executado = true;
+					executado = true;
 
-					}
 				}
 
 			} catch (Exception e) {

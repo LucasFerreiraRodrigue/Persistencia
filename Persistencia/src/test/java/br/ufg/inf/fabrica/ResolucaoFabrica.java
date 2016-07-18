@@ -30,7 +30,8 @@ public class ResolucaoFabrica {
 		Regra regra = new Regra("var", 1, "desc", f, f, "exp", "entao", "senao", "tipoRelato", f, dd);
 		regras.add(regra);
 
-		Resolucao resolucao = new Resolucao(String.valueOf(rd.nextInt(1000)), "nome", "descricao", new Date(), regras);
+		Resolucao resolucao = new Resolucao(String.valueOf(rd.nextInt(1000000)), "nome", "descricao", new Date(),
+				regras);
 
 		return resolucao;
 	}

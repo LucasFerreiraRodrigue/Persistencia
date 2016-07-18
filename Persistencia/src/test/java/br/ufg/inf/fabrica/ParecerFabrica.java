@@ -2,6 +2,7 @@ package br.ufg.inf.fabrica;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import br.ufg.inf.es.saep.sandbox.dominio.Avaliavel;
 import br.ufg.inf.es.saep.sandbox.dominio.Nota;
@@ -19,9 +20,12 @@ public class ParecerFabrica {
 	 * Método responsável por criar um novo parecer.
 	 */
 	public Parecer novoParecer() {
+
+		final Random rd = new Random();
+
 		final List<String> listaRadocs = new ArrayList<String>();
-		listaRadocs.add("1");
-		listaRadocs.add("2");
+		listaRadocs.add(String.valueOf(rd.nextInt(100000)));
+		listaRadocs.add(String.valueOf(rd.nextInt(100000)));
 
 		final List<Pontuacao> listaPontuacao = new ArrayList<Pontuacao>();
 
@@ -40,7 +44,8 @@ public class ParecerFabrica {
 
 		listaNota.add(nota);
 
-		Parecer parecer = new Parecer("id", "resolucaoId", listaRadocs, listaPontuacao, "fundamentacao", listaNota);
+		Parecer parecer = new Parecer(String.valueOf(rd.nextInt(1000000)), "resolucaoId", listaRadocs, listaPontuacao,
+				"fundamentacao", listaNota);
 
 		return parecer;
 	}
